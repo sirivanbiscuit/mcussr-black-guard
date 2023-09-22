@@ -29,9 +29,15 @@ async def on_message(message):
     msg.lower
 
     # among detector
-    print("among" in msg)
     if "among" in msg:
         await message.channel.send('"among"')
+        await message.channel.send(
+            "https://tenor.com/view/among-us-sus-yhk-among-twerk-among-us-twerk-gif-23335803"
+        )
+
+    # among us detector
+    if "among us" in msg:
+        await message.channel.send('"among us"')
         await message.channel.send(
             "https://tenor.com/view/among-us-sus-yhk-among-twerk-among-us-twerk-gif-23335803"
         )
@@ -44,4 +50,4 @@ async def on_message(message):
         )
 
 
-bot.run("MTE1NDg5MTY5MjM4NjgyODM5OQ.GsTAwD.lIQ8eg1tELsK2iQ5g-1L0-jAndgwjC9TqQfZow")
+bot.run("MTE1NDg5MTY5MjM4NjgyODM5OQ.GbVf7I.7RZHLaF-_5VsQEaf79yBuCgOOGo5WdhPOC0WB8")
