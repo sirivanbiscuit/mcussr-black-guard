@@ -4,6 +4,8 @@ from discord.ext import commands
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="$", intents=intents)
 
+## CHANGE IF NEW TOKEN PATH
+token = "mcussr-black-guard/bot/token.mcussr"
 
 @bot.event
 async def on_ready():
@@ -13,11 +15,6 @@ async def on_ready():
         gc += 1
     print("MCUSSR Black Guard is in " + str(gc) + " guilds.")
     print("Online!")
-
-
-@bot.command(name="ping")
-async def ping(ctx):
-    await ctx.send("pong")
 
 
 @bot.event
@@ -49,5 +46,11 @@ async def on_message(message):
             "https://tenor.com/view/among-us-sus-yhk-among-twerk-among-us-twerk-gif-23335803"
         )
 
+@bot.command()
+async def test(ctx, arg1, arg2):
+    await ctx.send(f'You passed {arg1} and {arg2}')
 
-bot.run("MTE1NDg5MTY5MjM4NjgyODM5OQ.GbVf7I.7RZHLaF-_5VsQEaf79yBuCgOOGo5WdhPOC0WB8")
+
+# Fetch token:
+if __name__ == "__main__":
+    bot.run(open(token).read())
