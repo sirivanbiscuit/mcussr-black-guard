@@ -3,6 +3,8 @@ import string
 from table2ascii import table2ascii as t2a
 from discord.ext import commands
 
+GRAPH_CACHE_PATH = "mcussr-black-guard/bot/graph_cache/"
+GRAPH = "graph.png"
 
 class Commands(commands.Cog):
     def __init__(self, bot):
@@ -68,19 +70,24 @@ class Commands(commands.Cog):
             plt.plot(keys, vals)
         plt.xticks([])
         plt.grid()
-        plt.savefig('graph.png')
+        plt.savefig(GRAPH_CACHE_PATH+GRAPH)
         plt.close()
 
-        with open('graph.png', 'rb') as f:
-            file = io.BytesIO(f.read())
+        # EMBED ARGS
+        colour = 0xff0000
+        title = f"Messages in {ctx.channel.name}:"
+        embed = discord.Embed(title=title, colour=colour)
+        image = discord.File(
+            io.BytesIO(open(GRAPH_CACHE_PATH+GRAPH).read()), 
+            filename=GRAPH)
         
         # Send graph
-        embed = discord.Embed(title=f"Messages in {ctx.channel.name}:", colour=0xff0000)
-        image = discord.File(file, filename='graph.png')
-        embed.set_image(url=f'attachment://graph.png')
-        await ctx.send("**Here is a graph of this channel's entire message history:**"
-                       +"\n(It's the best I can do)")
-        await ctx.send(file=image, embed=embed)
+        await ctx.send(
+            "**Here is a graph of this channel's entire message history:**"
+            +"\n(It's the best I can do)")
+        await ctx.send(
+            file=image, 
+            embed=embed.set_image(url='attachment://'+GRAPH))
 
 
     @msgplot.error
