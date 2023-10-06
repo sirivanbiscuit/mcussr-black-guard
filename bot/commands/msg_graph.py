@@ -1,16 +1,22 @@
 import discord
-import string
-from table2ascii import table2ascii as t2a
 from discord.ext import commands
 
-GRAPH_CACHE_PATH = "mcussr-black-guard/bot/graph_cache/"
+from table2ascii import table2ascii as t2a
+import matplotlib.pyplot as plt
+import io
+
+# If this doesn't exist you should probably make the folder here
+GRAPH_CACHE_PATH = "mcussr-black-guard/bot/_graphcache/"
 GRAPH = "graph.png"
 
-class Commands(commands.Cog):
+# Contains all message graph commands
+class MsgGraphCmds(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-        
+    """
+    An advanced command to generate graphs based on the entire server's message history. Can target specific words and phrases and calculate their occurence over the server's history.
+    """
     @commands.command()
     async def msgplot(self, ctx, arg1:str, arg2:str, arg3:str):
         # Check arg1
@@ -32,18 +38,23 @@ class Commands(commands.Cog):
         targ = arg3.lower()
         null_targ = arg3=='/null'
 
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import io
-
-        # Get dict of all valid msgs
+        # Collect message history
         await ctx.channel.send(
             "Collecting the entirety of this channels's message history..."
             )
         daily = {}
+        msgs = []
         date, prev_date = None, None
         view, view_milestone = 0, 10
-        msgs = [m async for m in ctx.channel.history(limit=None)]
+        async for m in ctx.channel.history(limit=None): 
+            msgs.append(m)
+            view += 1
+            if view == view_milestone:
+                view_milestone *= 5 if str(view_milestone)[0]=='1' else 2
+                await ctx.channel.send(f"Scanned {view} messages...")
+        
+        # Get dict of all valid msgs
+        await ctx.channel.send("Message history retrieved, building graph data...")
         for i in range(len(msgs)-1, -1, -1):
             msg = msgs[i]
             prev_date = msg.created_at.strftime("%d/%m/%Y")
@@ -54,10 +65,6 @@ class Commands(commands.Cog):
                     daily[date] = 1
                 else:
                     daily[date] += 1
-            view += 1
-            if view == view_milestone:
-                view_milestone *= 5 if str(view_milestone)[0]=='1' else 2
-                await ctx.channel.send(f"Scanned {view} messages...")
 
         # Get graph from dict
         plt.figure()
@@ -69,7 +76,6 @@ class Commands(commands.Cog):
         elif line:
             plt.plot(keys, vals)
         plt.xticks([])
-        plt.grid()
         plt.savefig(GRAPH_CACHE_PATH+GRAPH)
         plt.close()
 
@@ -77,9 +83,8 @@ class Commands(commands.Cog):
         colour = 0xff0000
         title = f"Messages in {ctx.channel.name}:"
         embed = discord.Embed(title=title, colour=colour)
-        image = discord.File(
-            io.BytesIO(open(GRAPH_CACHE_PATH+GRAPH).read()), 
-            filename=GRAPH)
+        with open(GRAPH_CACHE_PATH+GRAPH, 'rb') as f:
+            image = discord.File(io.BytesIO(f.read()), filename=GRAPH)
         
         # Send graph
         await ctx.send(
@@ -90,6 +95,9 @@ class Commands(commands.Cog):
             embed=embed.set_image(url='attachment://'+GRAPH))
 
 
+    """
+    Error catcher for incorrect number of args for $msgplot.
+    """
     @msgplot.error
     async def msgplot_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -97,42 +105,4 @@ class Commands(commands.Cog):
                            +"\n- `arg1`: graph type"
                            +"\n- `arg2`: moving average (`/null` for none)"  
                            +"\n- `arg3`: target string (`/null` for none)")
-    
-
-
-    def hello(self) -> dict:
-        return {}
-
-    @commands.command()
-    async def msgdata(self, ctx, data: int, check_for: str):
-        await ctx.channel.send(
-            "Collecting the entirety of this channels's message history..."
-            )
-        
-        daily = {}
-        date = None
-        check = None
-        view = 0
-        view_milestone = 10
-        n = check_for=='/null'
-        async for msg in ctx.channel.history(limit=None):
-            check = msg.created_at.strftime("%d/%m/%Y")
-            if date != check: 
-                if (n) or (targ.lower() in str(msg.content).lower()):
-                    date = check+""
-                    daily[date] = 1
-            else: 
-                if (n) or (targ.lower() in str(msg.content).lower()):
-                    daily[date] += 1
-            view += 1
-            if view == view_milestone:
-                view_milestone *= 5 if str(view_milestone)[0]=='1' else 2
-                await ctx.channel.send(f"Scanned {view} messages...")
-        
-        output = t2a(
-            header=[ "Date", 'Messages' ],
-            body=[[i, daily[i]] for i in daily]
-        )
-
-        await ctx.send(f"```\n{output}\n```")
     

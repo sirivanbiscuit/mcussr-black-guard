@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from passives import Passives
-from commands import Commands
+from commands import msg_graph as mg
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="$", intents=intents)
@@ -29,7 +29,7 @@ async def on_ready():
     )
 
     await bot.add_cog(Passives(bot))
-    await bot.add_cog(Commands(bot))
+    await bot.add_cog(mg.MsgGraphCmds(bot))
 
 
 # Fetch token and run:
